@@ -15,5 +15,5 @@ Route::get('/contact', function () {
 });
 
 Route::get('/about', function () {
-    return view('about', ['title' => 'About Page']);
+    return view('about', ['title' => 'About Page', 'nama' => 'Lita']);
 });
