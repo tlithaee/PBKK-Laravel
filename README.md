@@ -21,7 +21,6 @@
 
 ![image](images/homepagemobile.jpg)
 
-![image](images/homepagemobile1.jpg)
 
 **Penjelasan :**
 ```
@@ -43,6 +42,14 @@ aria-current="{{ request()->is('/') ? 'page' : false }}">{{ $slot }}</a>
 ```
 Komponen yang dapat dipanggil dalam kelas navbar agar tidak looping, sehingga dapat menggunakan best practice.
 
+**Route :**
+```
+Route::get('/', function () {
+    return view('home', ['title' => 'Home Page']);
+});
+```
+Akan mengembalikan view ke 'home', dengan title yang di set adalah 'Home Page'.
+
 ### Blog Page 
 - **Laptop :**
 
@@ -63,6 +70,14 @@ Komponen yang dapat dipanggil dalam kelas navbar agar tidak looping, sehingga da
 ```
 
 Menggunakan navbar dan layout yang telah diabstraksi menjadi component yang dipanggil dalam blog page. Menggunakan title yang telah diberikan dalam routing.
+
+**Route :**
+```
+Route::get('/blog', function () {
+    return view('blog', ['title' => 'Blog Page']);
+});
+```
+Akan mengembalikan view ke 'blog', dengan title yang di set adalah 'Blog Page'.
 
 ### About Page 
 - **Laptop :**
@@ -86,6 +101,14 @@ Menggunakan navbar dan layout yang telah diabstraksi menjadi component yang dipa
 
 Menggunakan navbar dan layout yang telah diabstraksi menjadi component yang dipanggil dalam about page. Menggunakan title yang telah diberikan dalam routing.
 
+**Route :**
+```
+Route::get('/about', function () {
+    return view('about', ['title' => 'About Page', 'nama' => 'Lita']);
+});
+```
+Akan mengembalikan view ke 'about', dengan title yang di set adalah 'About Page', memiliki atribut dari 'nama' = 'Lita'.
+
 ### Contact Page 
 - **Laptop :**
 
@@ -106,6 +129,14 @@ Menggunakan navbar dan layout yang telah diabstraksi menjadi component yang dipa
 ```
 
 Menggunakan navbar dan layout yang telah diabstraksi menjadi component yang dipanggil dalam contact page. Menggunakan title yang telah diberikan dalam routing.
+
+**Route :**
+```
+Route::get('/contact', function () {
+    return view('contact', ['title' => 'Contact Page']);
+});
+```
+Akan mengembalikan view ke 'contact', dengan title yang di set adalah 'Contact Page'.
 
 ## Tugas 2
 TBA
