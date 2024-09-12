@@ -48,7 +48,7 @@ Route::get('/', function () {
     return view('home', ['title' => 'Home Page']);
 });
 ```
-Akan mengembalikan view ke 'home', dengan title yang di set adalah 'Home Page'.
+Akan mengembalikan view ke `home`, dengan title yang di set adalah `Home Page`.
 
 ### Blog Page 
 - **Laptop :**
@@ -77,7 +77,7 @@ Route::get('/blog', function () {
     return view('blog', ['title' => 'Blog Page']);
 });
 ```
-Akan mengembalikan view ke 'blog', dengan title yang di set adalah 'Blog Page'.
+Akan mengembalikan view ke `blog`, dengan title yang di set adalah `Blog Page`.
 
 ### About Page 
 - **Laptop :**
@@ -107,7 +107,7 @@ Route::get('/about', function () {
     return view('about', ['title' => 'About Page', 'nama' => 'Lita']);
 });
 ```
-Akan mengembalikan view ke 'about', dengan title yang di set adalah 'About Page', memiliki atribut dari 'nama' = 'Lita'.
+Akan mengembalikan view ke `about`, dengan title yang di set adalah `About Page`, memiliki atribut dari `nama = Lita`.
 
 ### Contact Page 
 - **Laptop :**
@@ -136,7 +136,7 @@ Route::get('/contact', function () {
     return view('contact', ['title' => 'Contact Page']);
 });
 ```
-Akan mengembalikan view ke 'contact', dengan title yang di set adalah 'Contact Page'.
+Akan mengembalikan view ke `contact`, dengan title yang di set adalah `Contact Page`.
 
 ## Tugas 2
 TBA
