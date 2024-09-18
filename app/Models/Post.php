@@ -21,7 +21,7 @@ class Post {
                 'author' => 'Lita',
                 'body' => 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque blanditiis ad atque, doloribus optio vel dolorem. Porro culpa suscipit veniam incidunt impedit repellat deserunt, quasi placeat excepturi iusto libero praesentium.'
             ]
-            ];
+        ];
     }
 
     public static function find($slug): array {
