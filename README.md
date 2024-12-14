@@ -589,3 +589,305 @@ php artisan make:model Post -m
 
 _Penjelasan :_
 - Opsi `-m` otomatis membuat migration dengan nama sesuai model `(create_posts_table)`.
+
+
+## Tugas 4 - **Model Factories + Eloquent Relationship + Post Category + Database Seeder**
+
+### Model Factories
+
+- `Model Factory :` Sebuah "pabrik data" yang mendefinisikan aturan untuk mengisi kolom-kolom pada tabel database secara otomatis.
+
+- Laravel menggunakan library `Faker` untuk menghasilkan data palsu yang terlihat nyata, seperti nama, email, alamat, dan lainnya.
+
+- Model Factories digunakan bersamaan dengan `Eloquent ORM`.
+
+**Membuat Factory Baru**
+```
+php artisan make:factory PostFactory
+```
+
+_Penjelasan :_
+- `PostFactory` adalah nama factory, sesuai dengan model Post.
+- Factory ini akan dibuat di folder `database/factories`.
+
+**Mendefinisikan Aturan Factory**
+
+Setelah factory dibuat, tambahkan aturan untuk mengisi kolom pada tabel di method `definition()`.
+```
+public function definition()
+{
+    return [
+        'title' => $this->faker->sentence(),
+        'author' => $this->faker->name(),
+        'slug' => \Illuminate\Support\Str::slug($this->faker->sentence()),
+        'body' => $this->faker->text(200),
+    ];
+}
+```
+
+_Penjelasan :_
+- `sentence() :` Menghasilkan sebuah kalimat.
+- `name() :` Menghasilkan nama.
+- `text(200) :` Menghasilkan teks sepanjang 200 karakter.
+- `Str::slug() :` Mengubah string menjadi slug format.
+
+**Menggunakan Factory untuk Membuat Data**
+1. Masuk ke `Tinker`
+    ```
+    php artisan tinker
+    ```
+2. Membuat 1 data
+    ```
+    App\Models\Post::factory()->create();
+    ```
+3. Mmebuat banyak data
+    ```
+    App\Models\Post::factory()->count(10)->create();
+    ```
+
+**State Management dalam Factory**
+
+Untuk memodifikasi state tertentu, tambahkan method `kustom` pada factory.
+```
+public function unverified()
+{
+    return $this->state(fn (array $attributes) => [
+        'email_verified_at' => null,
+    ]);
+}
+```
+
+Gunakan method ini untuk data dengan state tertentu
+```
+App\Models\User::factory()->unverified()->create();
+```
+
+**Mengubah Lokal Fakta Data**
+
+Secara default, Faker menghasilkan data dengan locale `en_US`. Untuk mengubahnya, ubah konfigurasi di file `.env`
+```
+FAKER_LOCALE=id_ID
+```
+
+_Penjelasan :_
+- Contoh data dengan `id_ID` akan menghasilkan nama seperti "Iriana Mariati" atau "Saadat Tampubolon."
+
+**Studi Kasus: Membuat Data Dummy untuk Blog**
+1. Buat factory untuk model `Post`
+    ```
+    php artisan make:factory PostFactory
+    ```
+
+2. Definisikan aturan di file `factory`
+    ```
+    public function definition()
+    {
+        return [
+            'title' => $this->faker->sentence(),
+            'author' => $this->faker->name(),
+            'slug' => \Illuminate\Support\Str::slug($this->faker->sentence()),
+            'body' => $this->faker->text(200),
+        ];
+    }
+    ```
+
+3. Buat 200 data untuk tabel posts
+    ```
+    App\Models\Post::factory()->count(200)->create();
+    ```'
+
+### Eloquent Relationship
+
+**Jenis Relasi dalam Eloquent**
+- `One To One :` Satu data di tabel A berhubungan dengan satu data di tabel B.
+- `One To Many :` Satu data di tabel A berhubungan dengan banyak data di tabel B.
+- `Many To Many :` Banyak data di tabel A berhubungan dengan banyak data di tabel B.
+
+Untuk tutorial ini, fokus pada `One To Many`:
+- Satu User memiliki banyak Post `(Has Many)`.
+- Satu Post dimiliki oleh satu User `(Belongs To)`.
+
+**Menambahkan Foreign Key di Migration**
+1. Buka file migration tabel posts dan tambahkan kolom berikut,
+    ```
+    $table->foreignId('author_id')->constrained('users');
+    ```
+    _Penjelasan :_
+    - `foreignId :` Menambahkan kolom Foreign Key.
+    - `constrained('users') :` Menghubungkan kolom `author_id` ke kolom `id` di tabel `users`.
+2. Jalankan migrasi
+    ```
+    php artisan migrate:fresh
+    ```
+    _Penjelasan :_
+    - Kolom `author_id` di tabel `posts` menjadi Foreign Key yang terhubung ke tabel users.
+
+**Mendefinisikan Relasi pada Model**
+- Pada Model `Post`
+    ```
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
+    ```
+- Pada Model `User`
+    ```
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'author_id');
+    }
+    ```
+
+**Contoh Implementasi Relasi User dan Post**
+- Membuat Data Dummy dengan Relasi
+    1. Tambahkan aturan di `PostFactory` untuk menghubungkan `author_id` dengan `UserFactory`
+        ```
+        'author_id' => User::factory(),
+        ```
+    2. Buat data dummy
+        ```
+        php artisan tinker
+        App\Models\Post::factory()->count(10)->create();
+        ```
+        
+        _Penjelasan :_
+        - Laravel akan otomatis membuat data user baru untuk setiap `author_id`.
+
+- Menggunakan Recycle untuk Membatasi User
+    ```
+    App\Models\Post::factory()->count(100)
+    ->for(App\Models\User::factory()->count(5)->create())
+    ->create();
+    ```
+
+**Menggunakan Relasi dalam Query**
+- Mengambil Relasi dari Model `Post`
+    ```
+    $post = Post::first();
+    $author = $post->author; // Mengambil data user yang menulis post
+    echo $author->name;
+    ```
+- Mengambil Relasi dari Model `User`
+    ```
+    $user = User::first();
+    $posts = $user->posts; // Mengambil semua post yang ditulis user
+    foreach ($posts as $post) {
+        echo $post->title;
+    }
+    ```
+
+### Post Category
+
+**Pendahuluan**
+Fitur kategori memungkinkan setiap postingan memiliki kategori spesifik. Kategori ini dihubungkan ke postingan menggunakan relasi `One-to-Many :`
+
+- Satu Kategori memiliki banyak postingan `(Has Many)`.
+- Satu Postingan hanya memiliki satu kategori `(Belongs To)`.
+
+**Langkah-Langkah Utama**
+1. Membuat model, migration, dan factory untuk kategori.
+2. Menambahkan Foreign Key `category_id` di tabel `posts`.
+3. Mendefinisikan relasi pada model `Post` dan `Category`.
+4. Mengisi data dummy untuk kategori dan postingan menggunakan factory.
+5. Menampilkan kategori di tampilan.
+6. Menambahkan rute untuk kategori.
+
+**Membuat Model, Migration, dan Factory Kategori**
+
+Gunakan perintah berikut untuk membuat model, migration, dan factory sekaligus:
+```
+php artisan make:model Category -mf
+```
+
+Update Migration categories:
+```
+Schema::create('categories', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->string('slug')->unique();
+    $table->timestamps();
+});
+```
+
+**Menambahkan Foreign Key di Tabel Post**
+
+Tambahkan kolom category_id di migration tabel posts:
+```
+$table->foreignId('category_id')->constrained('categories');
+```
+
+Setelah selesai, jalankan migrasi:
+```
+php artisan migrate:fresh
+```
+
+**Menambahkan Foreign Key di Tabel Post**
+
+Mendefinisikan Relasi pada Model
+
+- Pada Model `Category`
+    ```
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'category_id');
+    }
+    ```
+
+- Pada Model `Post`
+    ```
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+    ```
+
+**Mengisi Data Dummy Menggunakan Factory**
+
+- Update `CategoryFactory` untuk membuat kategori secara otomatis
+    ```
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->word(),
+            'slug' => \Illuminate\Support\Str::slug($this->faker->word()),
+        ];
+    }
+    ```
+
+- Tambahkan kategori pada `PostFactory`
+    ```
+    'category_id' => Category::factory(),
+    ```
+
+- Gunakan perintah berikut untuk mengisi data dummy
+    ```
+    php artisan tinker
+    ```
+    ```
+    App\Models\Post::factory()
+        ->count(100)
+        ->recycle([
+            App\Models\Category::factory()->count(3)->create(),
+            App\Models\User::factory()->count(5)->create()
+        ])
+        ->create();
+    ```
+
+**Menampilkan Kategori di Tampilan**
+
+- Pada tampilan `post.blade.php`, tambahkan kategori:
+    ```
+    <div>
+        Kategori: <a href="/categories/{{ $post->category->slug }}">{{ $post->category->name }}</a>
+    </div>
+    ```
+
+**Menambahkan Rute untuk Kategori**
+    ```
+    Route::get('/categories/{category:slug}', function (Category $category) {
+        return view('posts', [
+            'title' => "Articles in Category: {$category->name}",
+            'posts' => $category->posts,
+        ]);
+    });
+    ```

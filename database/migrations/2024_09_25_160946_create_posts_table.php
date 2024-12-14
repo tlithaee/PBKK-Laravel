@@ -18,6 +18,10 @@ return new class extends Migration
                 table: 'users',
                 indexName: 'posts_author_id'
             );
+            $table->foreignId('category_id')->constrained(
+                table: 'categories',
+                indexName: 'posts_author_id'
+            );
             $table->string('slug')->unique();
             $table->string('text'); 
             $table->timestamps();
