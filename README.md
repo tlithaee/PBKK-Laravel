@@ -891,3 +891,97 @@ Mendefinisikan Relasi pada Model
         ]);
     });
     ```
+
+### Database Seeder
+
+`Database seeder :` fitur Laravel yang mempermudah pengisian data awal atau data dummy ke dalam database. Seeder bekerja dengan menggabungkan kemampuan Factory dan Query Builder untuk menghasilkan data secara otomatis dan terstruktur.
+
+**Pendahuluan**
+
+Seeder berfungsi untuk:
+
+- Mengisi data awal atau dummy pada database.
+- Melakukan testing UI dengan data realistik.
+- Membuat proses pengisian data lebih otomatis dibandingkan menggunakan Tinker atau query manual.
+
+**Keunggulan Database Seeder**
+- `Integrasi dengan Factory :` Seeder dapat menggunakan Factory untuk menghasilkan data dummy secara otomatis.
+- `Efisiensi Waktu :` Tidak perlu menginput data secara manual setelah melakukan migrasi.
+- `Kemudahan Testing :` Membantu pengujian aplikasi dengan dataset besar atau kompleks.
+
+**Langkah-Langkah Penggunaan**
+1. Membuat Database Seeder
+    ```
+    php artisan make:seeder NamaSeeder
+    ```
+
+2. Menulis Logika Seeder
+    ```
+    public function run()
+    {
+        User::factory()->count(10)->create();
+    }
+    ```
+
+3. Memanggil Seeder di DatabaseSeeder
+    ```
+    public function run()
+    {
+        $this->call([
+            UserSeeder::class,
+            CategorySeeder::class,
+        ]);
+    }
+    ```
+
+5. Menjalankan Seeder
+    ```
+    php artisan db:seed
+    ```
+
+**Membuat Database Seeder**
+1. Default Seeder
+- File `DatabaseSeeder` sudah tersedia secara default di folder `database/seeders`.
+2. Membuat Seeder Baru
+    ```
+    php artisan make:seeder NamaSeeder
+    ```
+3. Menulis Data di Seeder
+    ```
+    public function run()
+    {
+        User::create([
+            'name' => 'Sandika',
+            'username' => 'sandikagalih',
+            'email' => 'sandikagalih@example.com',
+            'password' => Hash::make('password'),
+        ]);
+    }
+    ```
+
+**Menjalankan Seeder**
+- Menjalankan Semua Seeder
+    ```
+    php artisan db:seed
+    ```
+
+- Menjalankan Seeder Spesifik
+    ```
+    php artisan db:seed --class=NamaSeeder
+    ```
+
+- Migrasi dan Seeding Sekaligus
+    ```
+    php artisan migrate:fresh --seed
+    ```
+    
+**Menggabungkan Seeder dan Factory**
+```
+public function run()
+{
+    Post::factory()->count(100)->create([
+        'author_id' => User::factory()->count(5)->create(),
+        'category_id' => Category::factory()->count(3)->create(),
+    ]);
+}
+```
