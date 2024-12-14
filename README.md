@@ -2,10 +2,6 @@
 |---------------------------|------------|
 |Syarifah Talitha Erfany | 5025211175 |
 
-## Daftar Isi
-- [Tugas 1](#tugas-1)
-- [Tugas 2](#tugas-2)
-
 ## Tugas 1
 ### Home Page 
 - **Laptop :**
@@ -1205,3 +1201,7 @@ Untuk halaman detail post `(post.single.blade.php)`, gunakan layout yang lebih c
         {{ $post->category->name }}
     </span>
     ```
+
+### Searching
+
+
