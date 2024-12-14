@@ -994,3 +994,94 @@ public function run()
     ```
 2. Menggunakan Data Tetap
 3. Menggabungkan Seeder dan Factory
+
+## Tugas 5 - **N+1 Problem + Redesign UI + Searching + Pagination**
+
+### N + 1 Problem
+
+**Apa Itu N+1 Problem?**
+
+Masalah N+1 Problem terjadi ketika aplikasi melakukan query tambahan untuk setiap data yang di-loop.
+
+Contoh:
+- Query 1: Mengambil semua post (N data).
+- Query tambahan: Untuk setiap post, mengambil data user dan kategori (N query lagi untuk setiap tabel relasi).
+
+Hasilnya:
+- Total query = 1 (post) + N (user) + N (kategori)
+
+Jika terdapat 100 post, maka akan ada 201 query (1 untuk post, 100 untuk user, dan 100 untuk kategori).
+
+**Studi Kasus N+1 Problem**
+
+Misalkan kita memiliki 100 post yang diambil dari database. Setiap post terkait dengan:
+
+- User (penulis)
+- Kategori
+
+Ketika aplikasi menggunakan lazy loading:
+
+- Query pertama: `SELECT * FROM posts`.
+- Untuk setiap post, query tambahan dilakukan:
+    - `SELECT * FROM users WHERE id = ?` (100 query)
+    - `SELECT * FROM categories WHERE id = ?` (100 query)
+Hasilnya: 201 query untuk menampilkan 100 post. Ini adalah N+1 Problem.
+
+**Penyebab Utama**
+- `Lazy Loading :` Relasi hanya diambil ketika dibutuhkan, menyebabkan query dilakukan secara bertahap.
+- `Looping Relasi :` Saat data di-loop, query dilakukan untuk setiap relasi.
+
+**Solusi: Eager Loading**
+
+`Eager loading :` solusi untuk menghindari N+1 Problem. Eloquent akan mengambil semua data yang dibutuhkan dalam satu query tambahan menggunakan `with`.
+
+- Implementasi Eager Loading
+    Tambahkan relasi yang ingin dimuat di awal menggunakan `with`
+    ```
+    $posts = Post::with(['author', 'category'])->get();
+    ```
+    - Query ke posts
+        ```
+        SELECT * FROM posts;
+        ```
+    - Query ke users
+        ```
+        SELECT * FROM users WHERE id IN (list_id_users);
+        ```
+    - Query ke categories
+        ```
+        SELECT * FROM categories WHERE id IN (list_id_categories);
+        ```
+
+**Lazy Eager Loading**
+
+Jika relasi perlu di-load setelah parent data diambil, gunakan `load`.
+```
+$user = User::first();
+$user->posts->load(['author', 'category']);
+```
+
+**Lazy Eager Loading**
+
+Eloquent memungkinkan kita untuk menentukan Eager Loading Default pada model. Semua query model akan otomatis melakukan eager loading.
+
+Tambahkan properti `$with` pada model
+```
+class Post extends Model
+{
+    protected $with = ['author', 'category'];
+}
+```
+
+**Mencegah Lazy Loading**
+Untuk mencegah penggunaan lazy loading di aplikasi, tambahkan fitur `Prevent Lazy Loading` pada service provider. Jika lazy loading digunakan, Laravel akan memunculkan `exception`.
+
+Tambahkan pada `AppServiceProvider`
+```
+use Illuminate\Database\Eloquent\Model;
+
+public function boot()
+{
+    Model::preventLazyLoading(!app()->isProduction());
+}
+```
