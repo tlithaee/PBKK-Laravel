@@ -985,3 +985,12 @@ public function run()
     ]);
 }
 ```
+
+**Optimasi Seeder**
+1. Membersihkan Cache Autoload
+    ```
+    composer dump-autoload
+    php artisan optimize:clear
+    ```
+2. Menggunakan Data Tetap
+3. Menggabungkan Seeder dan Factory
