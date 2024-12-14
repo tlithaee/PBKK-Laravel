@@ -1085,3 +1085,123 @@ public function boot()
     Model::preventLazyLoading(!app()->isProduction());
 }
 ```
+
+### Redesign UI
+
+**Pendahuluan**
+
+Tampilan blog sebelumnya berupa list sederhana. Pada tutorial ini, tampilan akan diubah menjadi `card layout` menggunakan komponen dari `Tailwind CSS` dan `Flowbite`. Beberapa fitur baru juga ditambahkan, seperti:
+
+- Warna dinamis untuk kategori.
+- Layout responsif dengan Grid.
+- Desain yang lebih interaktif.
+
+**Persiapan**
+1. Pastikan Tailwind CSS sudah terinstal.
+    ```
+    npm install -D tailwindcss postcss autoprefixer
+    npx tailwindcss init
+    ```
+2. Pastikan Laravel dan Node.js telah dikonfigurasi.
+3. Instal Flowbite
+    ```
+    npm install -D flowbite
+    ```
+4. Tambahkan plugin Flowbite ke `tailwind.config.js`
+    ```
+    const plugin = require('flowbite/plugin');
+
+    module.exports = {
+        content: [
+            './resources/**/*.blade.php',
+            './resources/**/*.js',
+            './resources/**/*.vue',
+            './node_modules/flowbite/**/*.js',
+        ],
+        theme: {
+            extend: {},
+        },
+        plugins: [plugin],
+    };
+    ```
+5. Jalankan proses build Tailwind
+    ```
+    npm run dev
+    ```
+
+**Redesign Halaman Blog**
+1. Konfigurasi Layout Blog
+    Gunakan komponen Flowbite untuk layout blog. Tambahkan komponen card dari Flowbite di dalam file post.blade.php:
+
+    - Struktur HTML dikonversi menjadi layout grid.
+    - Setiap post ditampilkan dalam bentuk card.
+
+    ```
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach ($posts as $post)
+        <div class="bg-white border rounded-lg shadow">
+                <img class="rounded-t-lg" src="https://via.placeholder.com/150" alt="{{ $post->title }}">
+                <div class="p-4">
+                    <a href="{{ route('categories.show', $post->category->slug) }}" class="text-blue-600">
+                        {{ $post->category->name }}
+                    </a>
+                    <h2 class="mt-2 text-lg font-semibold hover:underline">
+                        <a href="{{ route('posts.show', $post->slug) }}">{{ $post->title }}</a>
+                    </h2>
+                    <p class="mt-2 text-gray-700">{{ Str::limit($post->body, 150, '...') }}</p>
+                    <p class="mt-4 text-sm text-gray-500">
+                        Ditulis oleh <a href="{{ route('authors.show', $post->author->username) }}" class="text-blue-600 hover:underline">{{ $post->author->name }}</a>
+                        {{ $post->created_at->diffForHumans() }}
+                    </p>
+                </div>
+            </div>
+        @endforeach
+    </div>
+    ```
+
+2. Responsif dengan Grid Layout
+    - Tambahkan class grid-cols-3 untuk tampilan desktop.
+    - Tambahkan class grid-cols-2 untuk tampilan medium.
+    - Tambahkan gap-6 untuk jarak antar card.
+
+3. Hover Effects
+    ```
+    <a href="{{ route('posts.show', $post->slug) }}" class="hover:underline">
+        {{ $post->title }}
+    </a>
+    ```
+
+**Redesign Halaman Single Post**
+
+Untuk halaman detail post `(post.single.blade.php)`, gunakan layout yang lebih clean:
+1. Tambahkan tombol "Back to Blog".
+2. Tampilkan informasi penulis, kategori, dan waktu pembuatan.
+3. Gunakan grid untuk tata letak responsif.
+
+```
+<a href="{{ route('posts.index') }}" class="text-blue-600 hover:underline">← Back to All Posts</a>
+<h1 class="text-3xl font-bold mt-4">{{ $post->title }}</h1>
+<p class="text-sm text-gray-500">
+    Ditulis oleh <a href="{{ route('authors.show', $post->author->username) }}" class="text-blue-600 hover:underline">{{ $post->author->name }}</a>
+    pada {{ $post->created_at->format('d M Y') }}
+</p>
+<p class="mt-6 text-lg">{{ $post->body }}</p>
+```
+
+**Menambahkan Warna Dinamis pada Kategori**
+1. Menambahkan Kolom `color` ke Tabel Kategori
+
+    Edit file migrasi kategori `(create_categories_table.php)`:
+    ```
+    $table->string('color')->default('blue');
+    ```
+    Lakukan migrasi ulang:
+    ```
+    php artisan migrate:fresh --seed
+    ```
+2. Menampilkan Warna Kategori
+    ```
+    <span class="px-3 py-1 rounded text-white" style="background-color: {{ $post->category->color }}">
+        {{ $post->category->name }}
+    </span>
+    ```
