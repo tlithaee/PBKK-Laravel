@@ -1455,3 +1455,116 @@ Gunakan `Blade Directives` untuk menampilkan hasil pencarian atau pesan error
     <p class="text-gray-500">No articles found.</p>
 @endforelse
 ```
+
+### Pagination
+
+**Pendahuluan**
+
+`Pagination :` fitur penting untuk menampilkan data dalam jumlah besar secara terstruktur dan memudahkan navigasi
+
+**Langkah-langkah Implementasi Pagination**
+
+1. Konfigurasi Pagination di Controller
+
+    Ganti metode `get()` dengan `paginate()` di query database
+    ```
+    use App\Models\Post;
+
+    public function index() {
+        $posts = Post::paginate(5); // Menampilkan 5 data per halaman
+        return view('posts.index', compact('posts'));
+    }
+    ```
+
+2. Menampilkan Link Pagination di View
+
+    Tambahkan link pagination di file `view` menggunakan `links()`
+    ```
+    <!-- resources/views/posts/index.blade.php -->
+    <div>
+        @foreach ($posts as $post)
+            <div>{{ $post->title }}</div>
+        @endforeach
+
+        <!-- Link Pagination -->
+        {{ $posts->links() }}
+    </div>
+    ```
+
+3. Menyesuaikan Tailwind CSS
+
+    Jika pagination tidak muncul dengan benar, tambahkan konfigurasi berikut di file `tailwind.config.js`
+    ```
+    module.exports = {
+        content: [
+            './resources/**/*.blade.php',
+            './resources/**/*.js',
+            './resources/**/*.vue',
+        ],
+        theme: {
+            extend: {},
+        },
+        plugins: [],
+    };
+    ```
+
+    Lakukan kompilasi ulang Tailwind
+    ```
+    npm run dev
+    ```
+
+4. Menggunakan Query String
+
+    Jika Anda menggunakan filter kategori atau pencarian, tambahkan `withQueryString()` pada query untuk mempertahankan parameter saat berpindah halaman
+
+    ```
+    public function index(Request $request) {
+        $posts = Post::where('title', 'like', '%' . $request->query('search') . '%')
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('posts.index', compact('posts'));
+    }
+    ```
+
+5. Menambahkan Pagination di Posisi Lain
+    ```
+    <!-- Pagination di bagian atas -->
+    {{ $posts->links() }}
+
+    <!-- Konten -->
+    @foreach ($posts as $post)
+        <div>{{ $post->title }}</div>
+    @endforeach
+
+    <!-- Pagination di bagian bawah -->
+    {{ $posts->links() }}
+    ```
+
+6. Menggunakan Simple Pagination
+    ```
+    public function index() {
+        $posts = Post::simplePaginate(5);
+        return view('posts.index', compact('posts'));
+    }
+    ```
+
+7. Mengganti Framework CSS Pagination
+
+    Laravel menggunakan Tailwind CSS secara default untuk styling pagination. Jika ingin mengganti ke framework lain seperti Bootstrap, lakukan langkah berikut:
+
+    1. Publish view pagination ke folder `resources/views/vendor`
+        ```
+        php artisan vendor:publish --tag=laravel-pagination
+        ```
+    2. Ubah default pagination di `AppServiceProvider`
+        ```
+        use Illuminate\Pagination\Paginator;
+
+        public function boot() {
+            Paginator::useBootstrapFive(); // Untuk Bootstrap 5
+        }
+        ```
+
+8. Mengatasi Masalah Filter atau Pencarian
+    Pastikan parameter filter tetap pada URL saat pindah halaman dengan `withQueryString()`
